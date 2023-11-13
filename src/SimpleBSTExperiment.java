@@ -52,7 +52,8 @@ public class SimpleBSTExperiment {
    */
   static void addStrings(SimpleBST<String,String> example, String[] strings) {
     for (String str : strings) {
-      example.set(key(str), str);
+      //example.set(key(str), str);
+      example.setIterative(key(str), str);
     } // for
   } // add
 

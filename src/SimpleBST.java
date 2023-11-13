@@ -21,7 +21,7 @@ public class SimpleBST<K,V> implements SimpleMap<K,V> {
   /**
    * The comparator used to determine the ordering in the tree.
    */
-  Comparator<K> comparator;
+  Comparator<? super K> comparator;
 
   /**
    * The size of the tree.
@@ -63,7 +63,11 @@ public class SimpleBST<K,V> implements SimpleMap<K,V> {
 
   @Override
   public V set(K key, V value) {
-    return null;        // STUB
+    if (key == null) {
+      throw new NullPointerException("null key");
+    } // if
+    this.root = set(key, value, root);   
+    return cachedValue;
   } // set(K,V)
 
   @Override
@@ -86,8 +90,41 @@ public class SimpleBST<K,V> implements SimpleMap<K,V> {
 
   @Override
   public V remove(K key) {
-    return null;        // STUB
+    root = removeHelper(root, key);
+    return cachedValue;
   } // remove(K)
+
+  public BSTNode<K,V> removeHelper(BSTNode<K,V> node, K key){
+    if(node == null){
+      cachedValue = null;
+      return null;
+    }
+
+    cachedValue = node.value;
+    int comp = comparator.compare(key, node.key);
+
+    if(comp == 0){
+      if(node.left == null && node.right == null){
+        return null;
+      }
+      else if(node.left == null){
+        return node.right;
+      }
+      else if(node.right == null){
+        return node.left;
+      }
+      else{
+        //something
+      }
+    }
+    else if(comp < 0){
+      node.left = removeHelper(node.left, key);
+    }
+    else{
+      node.right = removeHelper(node.right, key);
+    }
+    return node;
+  }
 
   @Override
   public Iterator<K> keys() {
@@ -186,6 +223,71 @@ public class SimpleBST<K,V> implements SimpleMap<K,V> {
       return get(key, node.right);
     }
   } // get(K, BSTNode<K,V>)
+
+  BSTNode<K, V> set(K key, V value, BSTNode<K,V> node){
+    
+    if(node == null){
+      BSTNode<K,V> n = new BSTNode<>(key, value);
+      cachedValue = null;
+      this.size++;
+      return n;
+    }
+
+    int comp = comparator.compare(key, node.key);
+    if(comp == 0){
+      cachedValue = node.value;
+      node.value = value;
+    }
+    else if(comp < 0){
+      node.left = set(key, value, node.left);
+    }
+    else{
+      node.right = set(key, value, node.right);
+    }
+
+    return node;
+  }
+
+  V setIterative(K key, V value){
+
+    if(this.root == null){
+      this.root = new BSTNode<>(key, value);
+      this.size++;
+      return this.cachedValue;
+    }
+
+    BSTNode<K,V> current = this.root;
+    while(current != null){
+      int comp = comparator.compare(key, current.key);
+      if(comp == 0){
+        cachedValue = current.value;
+        current.value = value;
+        return cachedValue;
+      }
+      else if(comp < 0){
+        if(current.left != null){
+          current = current.left;
+        }
+        else{
+          current.left = new BSTNode<K,V>(key, value);
+          this.size++;
+          return null;
+        }
+      }
+      else{ // (comp > 0)
+        if(current.right != null){
+          current = current.right;
+        }
+        else{
+          current.right = new BSTNode<K,V>(key, value);
+          this.size++;
+          return null;
+        }
+      } 
+    }
+    return null;
+  }
+
 
   /**
    * Get an iterator for all of the nodes. (Useful for implementing the 
